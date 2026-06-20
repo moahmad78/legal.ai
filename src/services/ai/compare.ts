@@ -2,13 +2,11 @@ import OpenAI from "openai";
 import { DocumentCompareResult } from "./types";
 import { DOCUMENT_COMPARE_PROMPT } from "./prompts";
 import { env } from "@/lib/env";
-
-const openai = new OpenAI({
-  apiKey: env.OPENAI_API_KEY,
-});
-
 export async function compareDocuments(text1: string, text2: string, retries = 1): Promise<DocumentCompareResult> {
   try {
+    const openai = new OpenAI({
+      apiKey: env.OPENAI_API_KEY,
+    });
     // Truncate both to fit in context window (roughly 100k chars each)
     const truncatedText1 = text1.substring(0, 50000);
     const truncatedText2 = text2.substring(0, 50000);

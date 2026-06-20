@@ -3,10 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import OpenAI from "openai";
 import { env } from "@/lib/env";
 
-const openai = new OpenAI({
-  apiKey: env.OPENAI_API_KEY,
-});
-
 export async function GET(req: NextRequest) {
   try {
     const supabase = await createClient();
@@ -64,6 +60,10 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const openai = new OpenAI({
+      apiKey: env.OPENAI_API_KEY,
+    });
+    
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 

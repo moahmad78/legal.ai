@@ -1,11 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import OpenAI from "openai";
+import { OpenAI } from "openai";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const supabase = await createClient();
     const { data: { user: authUser } } = await supabase.auth.getUser();
     const userId = authUser?.id;

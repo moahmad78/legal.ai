@@ -2,12 +2,11 @@ import OpenAI from "openai";
 import { DocumentDetectionResult } from "./types";
 import { env } from "@/lib/env";
 
-const openai = new OpenAI({
-  apiKey: env.OPENAI_API_KEY,
-});
-
 export async function detectDocumentType(text: string): Promise<DocumentDetectionResult> {
   try {
+    const openai = new OpenAI({
+      apiKey: env.OPENAI_API_KEY,
+    });
     // Truncate text to fit within context window limits if necessary
     const truncatedText = text.substring(0, 10000); 
 

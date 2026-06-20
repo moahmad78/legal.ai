@@ -2,13 +2,11 @@ import OpenAI from "openai";
 import { DocumentAnalysisReport } from "./types";
 import { UNIVERSAL_ANALYSIS_PROMPT } from "./prompts";
 import { env } from "@/lib/env";
-
-const openai = new OpenAI({
-  apiKey: env.OPENAI_API_KEY,
-});
-
 export async function analyzeDocument(text: string, preferredLanguage: string = "English", retries = 1): Promise<DocumentAnalysisReport> {
   try {
+    const openai = new OpenAI({
+      apiKey: env.OPENAI_API_KEY,
+    });
     // Truncate to a reasonable length for OpenAI to process (approx 100k chars ~ 25k tokens)
     const truncatedText = text.substring(0, 100000);
 
