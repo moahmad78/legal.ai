@@ -21,7 +21,7 @@ export default async function ReportPage({
   // Find the internal Supabase user UUID
   const { data: dbUser } = await supabase
     .from("users")
-    .select("id")
+    .select("auth_user_id")
     .eq("id", userId)
     .single();
 

@@ -27,7 +27,7 @@ export function NotificationPreferences() {
       if (!userId) return;
       const supabase = createClient();
       
-      const { data: user } = await supabase.from("users").select("id").eq("id", userId).single();
+      const { data: user } = await supabase.from("users").select("id").eq("auth_user_id", userId).single();
       if (!user) return;
 
       const { data, error } = await supabase
@@ -64,7 +64,7 @@ export function NotificationPreferences() {
 
     try {
       const supabase = createClient();
-      const { data: user } = await supabase.from("users").select("id").eq("id", userId).single();
+      const { data: user } = await supabase.from("users").select("id").eq("auth_user_id", userId).single();
       
       if (user) {
         await supabase
@@ -143,3 +143,4 @@ export function NotificationPreferences() {
     </Card>
   );
 }
+

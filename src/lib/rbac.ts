@@ -21,7 +21,7 @@ export async function requireOrganizationMembership(requiredRole: Role = "viewer
   const { data: user } = await supabase
     .from("users")
     .select("id, active_organization_id, is_superadmin")
-    .eq("id", userId)
+    .eq("auth_user_id", userId)
     .single();
 
   if (!user) redirect("/sign-in");
@@ -46,7 +46,7 @@ export async function requireOrganizationMembership(requiredRole: Role = "viewer
         role: "owner",
         status: "active"
       });
-      await supabase.from("users").update({ active_organization_id: org.id }).eq("id", user.id);
+      await supabase.from("users").update({ active_organization_id: org.id }).eq("auth_user_id", user.id);
       user.active_organization_id = org.id;
       return { user, role: "owner" as Role, organizationId: org.id };
     }
@@ -61,7 +61,7 @@ export async function requireOrganizationMembership(requiredRole: Role = "viewer
 
   if (!membership || membership.status !== "active") {
     // Has an org set, but lost membership? Clear it out.
-    await supabase.from("users").update({ active_organization_id: null }).eq("id", user.id);
+    await supabase.from("users").update({ active_organization_id: null }).eq("auth_user_id", user.id);
     redirect("/"); 
   }
 
@@ -77,3 +77,4 @@ export async function requireOrganizationMembership(requiredRole: Role = "viewer
 export function hasPermission(currentRole: Role, requiredRole: Role): boolean {
   return ROLE_HIERARCHY[currentRole] >= ROLE_HIERARCHY[requiredRole];
 }
+

@@ -111,7 +111,7 @@ export async function POST(
     const { data: document, error: fetchError } = await supabase
       .from("documents")
       .select("*")
-      .eq("id", documentId)
+      .eq("auth_user_id", documentId)
       .single();
 
     if (fetchError || !document) {
@@ -215,7 +215,7 @@ export async function POST(
     }).eq("id", documentId);
 
     // Track usage
-    const { data: userObj } = await supabase.from("users").select("active_organization_id").eq("id", userId).single();
+    const { data: userObj } = await supabase.from("users").select("active_organization_id").eq("auth_user_id", userId).single();
     if (userObj?.active_organization_id) {
       await trackUsage(userObj.active_organization_id, "documents_processed");
     }

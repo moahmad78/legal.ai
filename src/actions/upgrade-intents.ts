@@ -14,7 +14,7 @@ export async function logUpgradeIntent(triggerSource: string, planSelected?: str
     const { data: userData } = await supabase
       .from("users")
       .select("id, active_organization_id")
-      .eq("id", userId)
+      .eq("auth_user_id", userId)
       .single();
 
     if (!userData) {
@@ -44,3 +44,4 @@ export async function logUpgradeIntent(triggerSource: string, planSelected?: str
     return { success: false, error: error.message || "Internal error" };
   }
 }
+

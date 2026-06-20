@@ -23,7 +23,7 @@ export default async function ClientsPage() {
     .order("created_at", { ascending: false });
 
   // Fetch counts
-  const clientsWithCounts = await Promise.all((clients || []).map(async (client) => {
+  const clientsWithCounts = await Promise.all((clients || []).map(async (client: any) => {
     // Matters count
     const { count: mattersCount } = await supabase
       .from("matters")

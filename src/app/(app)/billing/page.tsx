@@ -8,7 +8,7 @@ export default async function BillingPage() {
   const userId = authUser?.id;
   if (!userId) redirect("/sign-in");
 
-  const { data: user } = await supabase.from("users").select("active_organization_id").eq("id", userId).single();
+  const { data: user } = await supabase.from("users").select("active_organization_id").eq("auth_user_id", userId).single();
   
   if (!user || !user.active_organization_id) {
     redirect("/dashboard");
@@ -51,3 +51,4 @@ export default async function BillingPage() {
     </div>
   );
 }
+

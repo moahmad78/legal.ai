@@ -16,7 +16,7 @@ export default async function PricingPage() {
   const { data: dbUser } = await supabase
     .from("users")
     .select("plan")
-    .eq("id", userId)
+    .eq("auth_user_id", userId)
     .single();
 
   if (!dbUser) {
@@ -36,3 +36,4 @@ export default async function PricingPage() {
     </div>
   );
 }
+

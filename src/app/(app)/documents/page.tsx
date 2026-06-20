@@ -19,7 +19,7 @@ export default async function ReportsPage() {
   const { data: user } = await supabase
     .from("users")
     .select("id")
-    .eq("id", userId)
+    .eq("auth_user_id", userId)
     .single();
 
   if (!user) {
@@ -106,3 +106,4 @@ export default async function ReportsPage() {
     </div>
   );
 }
+

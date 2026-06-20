@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     }
 
 
-    const { data: dbUser } = await supabase.from("users").select("id").eq("id", userId).single();
+    const { data: dbUser } = await supabase.from("users").select("id").eq("auth_user_id", userId).single();
     if (!dbUser) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
     // Fetch or create general conversation
@@ -57,3 +57,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+

@@ -27,7 +27,7 @@ export default async function ReportPage({
     redirect("/sign-in");
   }
 
-  const { data: user } = await supabase.from("users").select("id").eq("id", userId).single();
+  const { data: user } = await supabase.from("users").select("auth_user_id").eq("auth_user_id", userId).single();
   if (!user) redirect("/dashboard");
 
   const { data: document, error } = await supabase

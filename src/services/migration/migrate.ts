@@ -11,7 +11,7 @@ export async function migrateGuestData(
   const { data: user, error: userError } = await supabase
     .from("users")
     .select("id")
-    .eq("id", userId)
+    .eq("auth_user_id", userId)
     .single();
 
   if (userError || !user) {
@@ -77,3 +77,4 @@ export async function migrateGuestData(
     migratedChats: migratedChatsCount,
   };
 }
+

@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
 
     const { cancel_at_period_end } = await req.json();
 
-    const { data: user } = await supabase.from("users").select("active_organization_id").eq("id", userId).single();
+    const { data: user } = await supabase.from("users").select("active_organization_id").eq("auth_user_id", userId).single();
     if (!user || !user.active_organization_id) {
       return NextResponse.json({ error: "Organization not found" }, { status: 400 });
     }
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     );
 
     try {
-      const { data: userRecord } = await supabase.from("users").select("email").eq("id", userId).single();
+      const { data: userRecord } = await supabase.from("users").select("email").eq("auth_user_id", userId).single();
       if (userRecord && userRecord.email) {
         // razorpay returns charge_at timestamp for when it will cancel
         const endDate = razorpaySub.charge_at ? new Date(razorpaySub.charge_at * 1000).toLocaleDateString() : "the end of your billing cycle";
@@ -62,3 +62,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }
+

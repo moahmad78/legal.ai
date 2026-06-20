@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     }
 
     // Verify sender is admin or owner
-    const { data: user } = await supabase.from("users").select("id").eq("id", userId).single();
+    const { data: user } = await supabase.from("users").select("id").eq("auth_user_id", userId).single();
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
     const { data: membership } = await supabase
@@ -65,3 +65,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

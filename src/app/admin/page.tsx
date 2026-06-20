@@ -10,7 +10,7 @@ export default async function AdminDashboardPage() {
   const userId = user?.id;
   if (!userId) redirect("/sign-in");
 
-  const { data: dbUser } = await supabase.from("users").select("is_superadmin").eq("id", userId).single();
+  const { data: dbUser } = await supabase.from("users").select("is_superadmin").eq("auth_user_id", userId).single();
 
   if (!user || !user.is_superadmin) {
     redirect("/dashboard?error=unauthorized");
@@ -132,3 +132,4 @@ export default async function AdminDashboardPage() {
     </div>
   );
 }
+

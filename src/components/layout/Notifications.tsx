@@ -18,7 +18,7 @@ export function Notifications() {
   useEffect(() => {
     async function loadNotifs() {
       if (!userId) return;
-      const { data: user } = await supabase.from("users").select("active_organization_id").eq("id", userId).single();
+      const { data: user } = await supabase.from("users").select("active_organization_id").eq("auth_user_id", userId).single();
       if (!user?.active_organization_id) return;
 
       const { data: notifs } = await supabase
@@ -42,7 +42,7 @@ export function Notifications() {
     setUnread(0);
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     
-    const { data: user } = await supabase.from("users").select("active_organization_id").eq("id", userId).single();
+    const { data: user } = await supabase.from("users").select("active_organization_id").eq("auth_user_id", userId).single();
     if (user?.active_organization_id) {
       await supabase.from("notifications").update({ read: true }).eq("organization_id", user.active_organization_id).eq("read", false);
     }
@@ -80,3 +80,4 @@ export function Notifications() {
     </Popover>
   );
 }
+

@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { action, details } = body;
 
-    const { data: user } = await supabase.from("users").select("id, active_organization_id").eq("id", userId).single();
+    const { data: user } = await supabase.from("users").select("id, active_organization_id").eq("auth_user_id", userId).single();
 
     if (user && user.active_organization_id) {
       await logAudit(user.active_organization_id, user.id, action, "organization", details);
@@ -23,3 +23,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

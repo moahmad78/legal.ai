@@ -20,13 +20,13 @@ export async function GET(
 
     const { documentId } = await params;
 
-    const { data: dbUser } = await supabase.from("users").select("id").eq("id", userId).single();
+    const { data: dbUser } = await supabase.from("users").select("auth_user_id").eq("auth_user_id", userId).single();
     if (!dbUser) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
     // Fetch or create conversation
     let { data: conversation } = await supabase
       .from("assistant_conversations")
-      .select("id")
+      .select("auth_user_id")
       .eq("document_id", documentId)
       .eq("user_id", user.id)
       .single();
@@ -89,7 +89,7 @@ export async function POST(
 
     if (!dbUser) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-    if (user.plan === "free") {
+    if (dbUser.plan === "free") {
       const { getFreeUsage, incrementFreeChat } = await import("@/lib/free-tracking");
       const usage = await getFreeUsage();
       if (usage && usage.chat_count >= 25) {
@@ -98,7 +98,7 @@ export async function POST(
       await incrementFreeChat();
     }
 
-    const internalUserId = user.id;
+    const internalUserId = dbUser.id;
 
     // Verify document ownership if logged in
     if (!isGuest) {

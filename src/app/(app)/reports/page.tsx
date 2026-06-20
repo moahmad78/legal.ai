@@ -24,7 +24,7 @@ export default function ReportsCenterPage() {
     async function fetchReports() {
       if (!userId) return;
 
-      const { data: user } = await supabase.from("users").select("id").eq("id", userId).single();
+      const { data: user } = await supabase.from("users").select("id").eq("auth_user_id", userId).single();
       if (!user) return;
 
       const { data } = await supabase
@@ -134,3 +134,4 @@ export default function ReportsCenterPage() {
     </div>
   );
 }
+

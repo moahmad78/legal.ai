@@ -81,7 +81,7 @@ export async function POST(req: Request) {
 
         // Also update the users plan for legacy code compatibility
         if (userId) {
-          await supabase.from("users").update({ plan: internalPlan }).eq("id", userId);
+          await supabase.from("users").update({ plan: internalPlan }).eq("auth_user_id", userId);
         }
 
         // If it's charged, create a billing_transaction
@@ -102,7 +102,7 @@ export async function POST(req: Request) {
         // Send activation email
         if (eventName === "subscription.activated" && userId) {
           try {
-            const { data: userRecord } = await supabase.from("users").select("email").eq("id", userId).single();
+            const { data: userRecord } = await supabase.from("users").select("email").eq("auth_user_id", userId).single();
             if (userRecord && userRecord.email) {
               const html = await render(SubscriptionActivatedEmail({ planName: internalPlan, renewalDate: new Date(subEntity.charge_at * 1000).toLocaleDateString() }));
               await sendEmail({
@@ -130,7 +130,7 @@ export async function POST(req: Request) {
 
       // Revert user to free plan
       if (userId) {
-        await supabase.from("users").update({ plan: "free" }).eq("id", userId);
+        await supabase.from("users").update({ plan: "free" }).eq("auth_user_id", userId);
       }
     } else if (eventName === "payment.failed") {
       const payment = event.payload.payment.entity;
@@ -156,3 +156,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

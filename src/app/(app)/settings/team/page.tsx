@@ -27,7 +27,7 @@ export default function TeamManagementPage() {
 
   async function loadTeam() {
     if (!userId) return;
-    const { data: user } = await supabase.from("users").select("id, active_organization_id").eq("id", userId).single();
+    const { data: user } = await supabase.from("users").select("id, active_organization_id").eq("auth_user_id", userId).single();
     if (!user?.active_organization_id) return;
     
     setOrgId(user.active_organization_id);
@@ -164,3 +164,4 @@ export default function TeamManagementPage() {
     </div>
   );
 }
+

@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     const { data: user } = await supabase
       .from("users")
       .select("id, active_organization_id")
-      .eq("id", userId)
+      .eq("auth_user_id", userId)
       .single();
 
     if (!user || !user.active_organization_id) {
@@ -69,3 +69,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }
+

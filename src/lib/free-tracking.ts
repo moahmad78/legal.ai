@@ -6,7 +6,7 @@ export async function getFreeUsage() {
   const userId = authUser?.id;
   if (!userId) return null;
 
-  const { data: userRecord } = await supabase.from("users").select("id, active_organization_id, plan").eq("id", userId).single();
+  const { data: userRecord } = await supabase.from("users").select("id, active_organization_id, plan").eq("auth_user_id", userId).single();
   if (!userRecord || userRecord.plan !== "free") return null;
 
   const now = new Date();
@@ -75,3 +75,4 @@ export async function incrementFreeDocument() {
 
   return data;
 }
+

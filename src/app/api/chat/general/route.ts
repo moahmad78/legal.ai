@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     if (!userId) return NextResponse.json({ messages: [] });
 
 
-    const { data: dbUser } = await supabase.from("users").select("id").eq("id", userId).single();
+    const { data: dbUser } = await supabase.from("users").select("id").eq("auth_user_id", userId).single();
     if (!dbUser) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
     // Fetch or create general conversation
@@ -84,15 +84,15 @@ export async function POST(req: NextRequest) {
 
     let internalUserId = null;
     if (!isGuest) {
-      const { data: user } = await supabase
+      const { data: dbUser } = await supabase
         .from("users")
         .select("id, plan")
-        .eq("id", userId)
+        .eq("auth_user_id", userId)
         .single();
 
       if (!dbUser) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-      if (user.plan === "free") {
+      if (dbUser.plan === "free") {
         const { getFreeUsage, incrementFreeChat } = await import("@/lib/free-tracking");
         const usage = await getFreeUsage();
         if (usage && usage.chat_count >= 25) {
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
         }
         await incrementFreeChat();
       }
-      internalUserId = user.id;
+      internalUserId = dbUser.id;
     }
 
     // Get or Create General Conversation
@@ -234,3 +234,4 @@ Guidelines:
     return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }
+

@@ -28,7 +28,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cli
 
     const { data: dbUser } = await supabase
       .from("users")
-      .select("id")
+      .select("auth_user_id")
       .eq("id", userId)
       .single();
 

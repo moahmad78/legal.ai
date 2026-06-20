@@ -13,7 +13,7 @@ export async function dismissWelcome() {
   // First get the user id
   const { data: user } = await supabase
     .from('users')
-    .select('id')
+    .select("auth_user_id")
     .eq("id", userId)
     .single();
 

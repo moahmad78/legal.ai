@@ -24,7 +24,7 @@ export default async function AskAIPage({
   const { data: user } = await supabase
     .from("users")
     .select("id, plan")
-    .eq("id", userId)
+    .eq("auth_user_id", userId)
     .single();
 
   if (!user) {

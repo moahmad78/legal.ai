@@ -20,7 +20,7 @@ export async function POST(
     // Verify user
     const { data: user } = await supabase
       .from("users")
-      .select("id")
+      .select("auth_user_id")
       .eq("id", userId)
       .single();
 
@@ -31,7 +31,7 @@ export async function POST(
     // Verify matter ownership
     const { data: matter } = await supabase
       .from("matters")
-      .select("id")
+      .select("auth_user_id")
       .eq("id", matterId)
       .eq("user_id", user.id)
       .single();
@@ -115,7 +115,7 @@ export async function GET(
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const supabase = await createClient();
-    const { data: user } = await supabase.from("users").select("id").eq("id", userId).single();
+    const { data: user } = await supabase.from("users").select("id").eq("auth_user_id", userId).single();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { data, error } = await supabase

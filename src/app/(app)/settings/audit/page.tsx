@@ -10,7 +10,7 @@ export default async function AuditLogsPage() {
   const userId = user?.id;
   if (!userId) redirect("/sign-in");
 
-  const { data: dbUser } = await supabase.from("users").select("id, active_organization_id").eq("id", userId).single();
+  const { data: dbUser } = await supabase.from("users").select("id, active_organization_id").eq("auth_user_id", userId).single();
 
   if (!user?.active_organization_id) {
     redirect("/dashboard");
@@ -77,3 +77,4 @@ export default async function AuditLogsPage() {
     </div>
   );
 }
+

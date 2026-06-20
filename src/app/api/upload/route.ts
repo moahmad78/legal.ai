@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
 
     if (userId) {
       // Find internal Supabase user
-      const { data: userRecord } = await supabase.from("users").select("id, plan").eq("id", userId).single();
+      const { data: userRecord } = await supabase.from("users").select("id, plan").eq("auth_user_id", userId).single();
       
       if (userRecord) {
         internalUserId = userRecord.id;
@@ -143,3 +143,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
