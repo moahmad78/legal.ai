@@ -33,6 +33,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No active subscription found" }, { status: 404 });
     }
 
+    if (!razorpay) {
+      return NextResponse.json({ error: "Razorpay is not configured" }, { status: 500 });
+    }
+
     const razorpaySub = await razorpay.subscriptions.cancel(
         subscription.razorpay_subscription_id,
         cancel_at_period_end ? 1 : 0

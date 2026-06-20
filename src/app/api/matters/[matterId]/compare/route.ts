@@ -10,12 +10,12 @@ export async function POST(
   const { matterId } = await params;
   
   try {
-    const { userId: userId } = await auth();
+    const supabase = await createClient();
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    const userId = authUser?.id;
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const supabase = await createClient();
     
     // Verify user
     const { data: user } = await supabase
@@ -111,10 +111,10 @@ export async function GET(
   const { matterId } = await params;
   
   try {
-    const { userId: userId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
     const supabase = await createClient();
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    const userId = authUser?.id;
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const { data: user } = await supabase.from("users").select("id").eq("auth_user_id", userId).single();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

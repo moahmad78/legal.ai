@@ -39,8 +39,8 @@ export async function POST(req: Request) {
     if (!document) return NextResponse.json({ error: "Document not found" }, { status: 404 });
 
     // Based on the reportType, prompt the LLM to structure the payload correctly
-    let systemPrompt = "You are an expert legal drafter. Return JSON.";
-    let userPrompt = "Structure the report based on this data.";
+    const systemPrompt = "You are an expert legal drafter. Return JSON.";
+    const userPrompt = "Structure the report based on this data.";
     
     // To save time and tokens, we will just use the pre-calculated risks and clauses 
     // and format them directly in the UI. 

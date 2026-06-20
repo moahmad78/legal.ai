@@ -5,10 +5,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 export async function dismissWelcome() {
-  const { userId: userId } = await auth();
-  if (!userId) return { success: false, error: "Unauthorized" };
-
   const supabase = await createClient();
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  const userId = authUser?.id;
+  if (!userId) return { success: false, error: "Unauthorized" };
 
   // First get the user id
   const { data: user } = await supabase

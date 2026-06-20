@@ -23,6 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ matterId:
 }
 
 export default async function MatterDetailPage({ params }: { params: Promise<{ matterId: string }> }) {
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const userId = user?.id;
   if (!userId) redirect("/sign-in");

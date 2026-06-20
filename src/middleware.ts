@@ -18,7 +18,7 @@ const isProtectedRoute = (pathname: string) => {
 };
 
 export async function middleware(request: NextRequest) {
-  const isSupabaseConfigured = !!(env.NEXT_PUBLIC_SUPABASE_URL && env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  const isSupabaseConfigured = !!(env.NEXT_PUBLIC_SUPABASE_URL && env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY);
   
   if (!isSupabaseConfigured) {
     return NextResponse.next();

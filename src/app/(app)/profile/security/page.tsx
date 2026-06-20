@@ -44,7 +44,7 @@ export default function SecurityPage() {
                       <p className="font-medium text-sm">
                         Desktop Session
                       </p>
-                      {session.id === user.primaryEmailAddressId ? null : <Badge variant="outline" className="bg-green-500/10 text-green-600 text-[10px]">Current Session</Badge>}
+                      {session.id === sessions[0]?.id ? null : <Badge variant="outline" className="bg-green-500/10 text-green-600 text-[10px]">Current Session</Badge>}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
                       Last Active: {session.lastActiveAt ? new Date(session.lastActiveAt).toLocaleString() : "Unknown"}
