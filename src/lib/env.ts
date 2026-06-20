@@ -1,8 +1,9 @@
 import { z } from "zod";
 
 const envSchema = z.object({
-  NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
+  NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1).optional(),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1).optional(),
   
   OPENAI_API_KEY: z.string().min(1).optional(),
   
@@ -22,20 +23,31 @@ const parseEnv = () => {
     const parsed = envSchema.safeParse(process.env);
     
     if (!parsed.success) {
-      console.error("❌ Invalid environment variables:", parsed.error.format());
-      if (process.env.NODE_ENV === "production" && !process.env.SKIP_ENV_VALIDATION && process.env.NEXT_PHASE !== 'phase-production-build' && !process.env.VERCEL) {
-        console.warn("Skipping strict env validation to allow build to proceed. Please ensure vars are set.");
-      }
+      console.warn("⚠️  Environment validation warnings:", parsed.error.format());
+    }
+
+    const data = parsed.success ? parsed.data : (process.env as any);
+
+    // Fallback logic for Vercel's Supabase Integration
+    if (!data.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY && data.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      data.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = data.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     }
     
-    return (parsed.success ? parsed.data : process.env) as z.infer<typeof envSchema>;
+    return data as z.infer<typeof envSchema>;
   }
   
   // Client side fallback (only has access to NEXT_PUBLIC_)
-  return {
-    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY as string,
-  } as z.infer<typeof envSchema>;
+  const clientEnv = {
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  };
+
+  if (!clientEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY && clientEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    clientEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = clientEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  }
+
+  return clientEnv as z.infer<typeof envSchema>;
 };
 
 export const env = parseEnv();
