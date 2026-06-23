@@ -59,14 +59,18 @@ export async function POST(req: NextRequest) {
     }
 
     if (userId) {
+      console.log(`[DB User Lookup] Searching for auth_user_id: ${userId}`);
       // Find internal Supabase user and their organization
-      const { data: userRecord } = await supabase
+      const { data: userRecord, error: userError } = await supabase
         .from("users")
         .select("id, plan, active_organization_id")
         .eq("auth_user_id", userId)
         .single();
       
-      if (userRecord) {
+      if (userError) {
+        console.error(`[DB User Lookup] Failed to find user in DB:`, userError.message || userError);
+      } else if (userRecord) {
+        console.log(`[DB User Lookup] Found DB User: ${userRecord.id}`);
         internalUserId = userRecord.id;
         userPlan = userRecord.plan;
         
@@ -104,7 +108,9 @@ export async function POST(req: NextRequest) {
       upload_status: "uploaded",
     };
 
+    const { data: schemaCheck } = await supabase.from("documents").select("*").limit(1);
     console.log(`[DB Insert Audit]`);
+    console.log(`- Actual documents schema (columns):`, schemaCheck && schemaCheck.length > 0 ? Object.keys(schemaCheck[0]).join(", ") : "Table empty or missing");
     console.log(`- Table: documents`);
     console.log(`- Auth User ID: ${userId || 'null (guest)'}`);
     console.log(`- DB User ID: ${internalUserId || 'null'}`);
