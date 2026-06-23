@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(arrayBuffer);
 
     // Upload to S3
-    const { key, url } = await uploadFileToS3(buffer, file.name, file.type, guestSessionId);
+    const { key, url } = await uploadFileToS3(buffer, file.name, file.type, guestSessionId, userId);
 
     // Store in Supabase
     const { data: document, error } = await supabase
