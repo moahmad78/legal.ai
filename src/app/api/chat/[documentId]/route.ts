@@ -15,13 +15,13 @@ export async function GET(
 
     const { documentId } = await params;
 
-    const { data: dbUser } = await supabase.from("users").select("auth_user_id").eq("auth_user_id", userId).single();
-    if (!dbUser) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    console.log("AUTH USER", user);
+    console.log("OPENAI KEY", !!process.env.OPENAI_API_KEY);
 
     // Fetch or create conversation
     let { data: conversation } = await supabase
       .from("assistant_conversations")
-      .select("auth_user_id")
+      .select("id")
       .eq("document_id", documentId)
       .eq("user_id", user.id)
       .single();
@@ -79,24 +79,18 @@ export async function POST(
     }
 
 
-    const { data: dbUser } = await supabase
-      .from("users")
-      .select("id, plan")
-      .eq("id", userId)
-      .single();
+    console.log("AUTH USER", user);
+    console.log("OPENAI KEY", !!process.env.OPENAI_API_KEY);
 
-    if (!dbUser) return NextResponse.json({ error: "User not found" }, { status: 404 });
-
-    if (dbUser.plan === "free") {
-      const { getFreeUsage, incrementFreeChat } = await import("@/lib/free-tracking");
-      const usage = await getFreeUsage();
-      if (usage && usage.chat_count >= 25) {
-        return NextResponse.json({ error: "Free plan limit reached", code: "FREE_LIMIT" }, { status: 403 });
-      }
-      await incrementFreeChat();
+    // Assume free plan by default if no user record is used
+    const { getFreeUsage, incrementFreeChat } = await import("@/lib/free-tracking");
+    const usage = await getFreeUsage();
+    if (usage && usage.chat_count >= 25) {
+      return NextResponse.json({ error: "Free plan limit reached", code: "FREE_LIMIT" }, { status: 403 });
     }
+    await incrementFreeChat();
 
-    const internalUserId = dbUser.id;
+    const internalUserId = userId; // Use auth user ID directly
 
     // Verify document ownership if logged in
     if (!isGuest) {
@@ -112,20 +106,25 @@ export async function POST(
     }
 
     // Get or Create Conversation
-    let { data: conversation } = await supabase
-      .from("assistant_conversations")
-      .select("id")
-      .eq("document_id", documentId)
-      .eq("user_id", internalUserId)
-      .single();
-
-    if (!conversation) {
-      const { data: newConv } = await supabase
+    let conversation = null;
+    if (!isGuest && internalUserId) {
+      const { data: existingConv } = await supabase
         .from("assistant_conversations")
-        .insert({ document_id: documentId, user_id: internalUserId, title: "Document Chat", mode: "document" })
         .select("id")
+        .eq("document_id", documentId)
+        .eq("user_id", internalUserId)
         .single();
-      conversation = newConv;
+      
+      conversation = existingConv;
+
+      if (!conversation) {
+        const { data: newConv } = await supabase
+          .from("assistant_conversations")
+          .insert({ document_id: documentId, user_id: internalUserId, title: "Document Chat", mode: "document" })
+          .select("id")
+          .single();
+        conversation = newConv;
+      }
     }
 
     // Fetch Context (Risks & Clauses & Text)
