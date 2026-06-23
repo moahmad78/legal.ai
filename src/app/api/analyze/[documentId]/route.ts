@@ -124,6 +124,11 @@ export async function POST(
     // Update status to processing
     await supabase.from("documents").update({ status: "processing" }).eq("id", documentId);
 
+    if (!document.storage_key) {
+      console.log("Document storage_key is missing for document ID:", documentId);
+      throw new Error("Document storage_key is missing");
+    }
+
     // 2. Retrieve file from Supabase Storage
     const { data: fileData, error: downloadError } = await supabase.storage
       .from("documents")

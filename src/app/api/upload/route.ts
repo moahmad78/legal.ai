@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
       file_type: file.type,
       file_size: file.size,
       file_path: url,
+      storage_key: key,
       upload_status: "uploaded",
     };
 
