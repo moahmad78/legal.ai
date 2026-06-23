@@ -13,15 +13,19 @@ export async function uploadFileToS3(
 
   const supabase = await createClient();
   
+  const bucketName = "documents";
+  console.log(`[Storage] Attempting upload to bucket: ${bucketName}, key: ${key}`);
+
   const { data, error } = await supabase.storage
-    .from("documents")
+    .from(bucketName)
     .upload(key, fileBuffer, {
       contentType,
       upsert: false,
     });
 
   if (error) {
-    throw new Error(`Storage upload failed: ${error.message}`);
+    console.error(`[Storage] Upload failed for bucket ${bucketName}:`, error);
+    throw new Error(`Storage upload failed: ${error.message} (Bucket: ${bucketName})`);
   }
 
   const { data: publicUrlData } = supabase.storage
