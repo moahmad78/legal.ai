@@ -107,14 +107,17 @@ export async function POST(
   }
 
   try {
+    console.log("Document ID:", documentId);
+
     // 1. Fetch document metadata
     const { data: document, error: fetchError } = await supabase
       .from("documents")
       .select("*")
-      .eq("auth_user_id", documentId)
+      .eq("id", documentId)
       .single();
 
     if (fetchError || !document) {
+      console.log("Document lookup failed:", fetchError);
       return NextResponse.json({ error: "Document not found" }, { status: 404 });
     }
 
@@ -215,10 +218,8 @@ export async function POST(
     }).eq("id", documentId);
 
     // Track usage
-    const { data: userObj } = await supabase.from("users").select("active_organization_id").eq("auth_user_id", userId).single();
-    if (userObj?.active_organization_id) {
-      await trackUsage(userObj.active_organization_id, "documents_processed");
-    }
+    // Using userId as organization_id since public.users is removed
+    await trackUsage(userId, "documents_processed");
 
     return NextResponse.json({
       success: true,
