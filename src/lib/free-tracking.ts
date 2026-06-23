@@ -6,8 +6,13 @@ export async function getFreeUsage() {
   const userId = authUser?.id;
   if (!userId) return null;
 
-  const { data: userRecord } = await supabase.from("users").select("id, active_organization_id, plan").eq("auth_user_id", userId).single();
-  if (!userRecord || userRecord.plan !== "free") return null;
+  // Since public.users is removed, we default all authenticated users to "free" plan for now
+  // or bypass checking the "users" table.
+  const userRecord = {
+    id: userId,
+    active_organization_id: userId, // Defaulting to userId for org
+    plan: "free"
+  };
 
   const now = new Date();
   const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
