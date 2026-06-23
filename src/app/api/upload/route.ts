@@ -96,15 +96,12 @@ export async function POST(req: NextRequest) {
       .single();
 
     const insertPayload = {
-      guest_session_id: internalUserId ? null : guestSessionId,
       user_id: internalUserId,
-      organization_id: userRecordForOrg?.active_organization_id || null,
       file_name: file.name,
       file_type: file.type,
       file_size: file.size,
-      file_url: url,
-      storage_key: key,
-      status: "uploaded",
+      file_path: url,
+      upload_status: "uploaded",
     };
 
     console.log(`[DB Insert Audit]`);
@@ -152,7 +149,7 @@ export async function POST(req: NextRequest) {
         type: file.type,
         name: file.name,
       },
-      status: document.status,
+      status: document.upload_status,
     });
   } catch (error: any) {
     console.error("Upload API error:", error);
