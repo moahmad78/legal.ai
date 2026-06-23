@@ -7,18 +7,7 @@ export async function migrateGuestData(
 ): Promise<MigrationSummary> {
   const supabase = await createClient();
 
-  // First, find the internal Supabase user UUID based on the clerk_user_id
-  const { data: user, error: userError } = await supabase
-    .from("users")
-    .select("id")
-    .eq("auth_user_id", userId)
-    .single();
-
-  if (userError || !user) {
-    throw new Error(`User not found in Supabase for clerk_user_id: ${userId}`);
-  }
-
-  const dbUserId = user.id;
+  const dbUserId = userId; // Bypass users table, use auth userId directly
 
   // Find guest documents
   const { data: documents, error: docFetchError } = await supabase
