@@ -51,56 +51,23 @@ export async function POST(req: NextRequest) {
     const supabase = await createClient();
     const { data: { user: authUser } } = await supabase.auth.getUser();
     const userId = authUser?.id;
-    let internalUserId = null;
-    let userPlan = null;
 
     if (!userId) {
       // Guest limits are handled purely client-side via sessionStorage
     }
 
     if (userId) {
-      console.log(`[DB User Lookup] Searching for auth_user_id: ${userId}`);
-      // Find internal Supabase user and their organization
-      const { data: userRecord, error: userError } = await supabase
-        .from("users")
-        .select("id, plan, active_organization_id")
-        .eq("auth_user_id", userId)
-        .single();
-      
-      if (userError) {
-        console.error(`[DB User Lookup] Failed to find user in DB:`, userError.message || userError);
-      } else if (userRecord) {
-        console.log(`[DB User Lookup] Found DB User: ${userRecord.id}`);
-        internalUserId = userRecord.id;
-        userPlan = userRecord.plan;
-        
-        // ... Check usage limits if on free plan ...
-        if (userRecord.plan === "free") {
-          const { getFreeUsage } = await import("@/lib/free-tracking");
-          const usageLog = await getFreeUsage();
-
-          if (usageLog && usageLog.document_count >= 3) {
-            return Response.json({ success: false, error: "Free plan limit reached", code: "FREE_LIMIT" }, { status: 403 });
-          }
-        }
-      }
+      console.log(`[DB User Lookup] Skipping public.users lookup. Using Auth UID directly: ${userId}`);
     }
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
     // Upload to S3
-    const { key, url } = await uploadFileToS3(buffer, file.name, file.type, guestSessionId, userId, internalUserId);
-
-    // Fetch user record again just in case we need active_organization_id directly here
-    const { data: userRecordForOrg } = await supabase
-      .from("users")
-      .select("active_organization_id")
-      .eq("auth_user_id", userId)
-      .single();
+    const { key, url } = await uploadFileToS3(buffer, file.name, file.type, guestSessionId, userId, userId);
 
     const insertPayload = {
-      user_id: internalUserId,
+      user_id: userId || null,
       file_name: file.name,
       file_type: file.type,
       file_size: file.size,
@@ -113,7 +80,6 @@ export async function POST(req: NextRequest) {
     console.log(`- Actual documents schema (columns):`, schemaCheck && schemaCheck.length > 0 ? Object.keys(schemaCheck[0]).join(", ") : "Table empty or missing");
     console.log(`- Table: documents`);
     console.log(`- Auth User ID: ${userId || 'null (guest)'}`);
-    console.log(`- DB User ID: ${internalUserId || 'null'}`);
     console.log(`- Insert Payload:`, insertPayload);
 
     // Store in Supabase
@@ -139,8 +105,8 @@ export async function POST(req: NextRequest) {
       console.log("[DEBUG Upload] File saved to Supabase with ID:", document.id);
     }
 
-    // Increment usage log if authenticated
-    if (internalUserId && userPlan === "free") {
+    // Increment usage log if authenticated (assuming free default for now)
+    if (userId) {
       const { incrementFreeDocument } = await import("@/lib/free-tracking");
       await incrementFreeDocument();
     }
