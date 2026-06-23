@@ -59,14 +59,18 @@ export async function POST(req: NextRequest) {
     }
 
     if (userId) {
-      // Find internal Supabase user
-      const { data: userRecord } = await supabase.from("users").select("id, plan").eq("auth_user_id", userId).single();
+      // Find internal Supabase user and their organization
+      const { data: userRecord } = await supabase
+        .from("users")
+        .select("id, plan, active_organization_id")
+        .eq("auth_user_id", userId)
+        .single();
       
       if (userRecord) {
         internalUserId = userRecord.id;
         userPlan = userRecord.plan;
-
-        // Check usage limits if on free plan
+        
+        // ... Check usage limits if on free plan ...
         if (userRecord.plan === "free") {
           const { getFreeUsage } = await import("@/lib/free-tracking");
           const usageLog = await getFreeUsage();
@@ -84,25 +88,48 @@ export async function POST(req: NextRequest) {
     // Upload to S3
     const { key, url } = await uploadFileToS3(buffer, file.name, file.type, guestSessionId, userId, internalUserId);
 
+    // Fetch user record again just in case we need active_organization_id directly here
+    const { data: userRecordForOrg } = await supabase
+      .from("users")
+      .select("active_organization_id")
+      .eq("auth_user_id", userId)
+      .single();
+
+    const insertPayload = {
+      guest_session_id: internalUserId ? null : guestSessionId,
+      user_id: internalUserId,
+      organization_id: userRecordForOrg?.active_organization_id || null,
+      file_name: file.name,
+      file_type: file.type,
+      file_size: file.size,
+      file_url: url,
+      storage_key: key,
+      status: "uploaded",
+    };
+
+    console.log(`[DB Insert Audit]`);
+    console.log(`- Table: documents`);
+    console.log(`- Auth User ID: ${userId || 'null (guest)'}`);
+    console.log(`- DB User ID: ${internalUserId || 'null'}`);
+    console.log(`- Insert Payload:`, insertPayload);
+
     // Store in Supabase
     const { data: document, error } = await supabase
       .from("documents")
-      .insert({
-        guest_session_id: internalUserId ? null : guestSessionId,
-        user_id: internalUserId,
-        file_name: file.name,
-        file_type: file.type,
-        file_size: file.size,
-        file_url: url,
-        storage_key: key,
-        status: "uploaded",
-      })
+      .insert(insertPayload)
       .select()
       .single();
 
+    console.log(`- Insert Response:`, document);
+    console.log(`- Insert Error:`, error);
+
     if (error) {
-      console.error("Supabase insert error:", error);
-      return Response.json({ success: false, error: "Failed to record document in database" }, { status: 500 });
+      console.error("Supabase insert error details:", error);
+      return Response.json({ 
+        success: false, 
+        error: "Failed to record document in database: " + error.message,
+        details: error 
+      }, { status: 500 });
     }
 
     if (process.env.NODE_ENV === "development") {
